@@ -16,7 +16,7 @@ class ConvertToWavProcessor(BaseWavProcessor):
         return 'ToWav'
 
     def process(self, input_fn, sr, tmp_dir, processed_dir, item_name, preprocess_args):
-        if input_fn[-4:] == '.wav':
+        if input_fn.endswith('.wav'):
             return input_fn, sr
         else:
             output_fn = self.output_fn(input_fn)
@@ -35,9 +35,6 @@ class ResampleProcessor(BaseWavProcessor):
         sr_file = librosa.core.get_samplerate(input_fn)
         if sr != sr_file:
             subprocess.check_call(f'sox -v 0.95 "{input_fn}" -r{sr} "{output_fn}"', shell=True)
-            y, _ = librosa.core.load(input_fn, sr=sr)
-            y, _ = librosa.effects.trim(y)
-            save_wav(y, output_fn, sr)
             return output_fn, sr
         else:
             return input_fn, sr
@@ -54,7 +51,7 @@ class TrimSILProcessor(BaseWavProcessor):
         y, _ = librosa.core.load(input_fn, sr=sr)
         y, _ = librosa.effects.trim(y)
         save_wav(y, output_fn, sr)
-        return output_fn
+        return output_fn, sr
 
 
 @register_wav_processors(name='trim_all_sil')

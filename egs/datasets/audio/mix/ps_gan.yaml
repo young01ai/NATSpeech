@@ -1,0 +1,3 @@
+base_config:
+  - egs/egs_bases/tts/ps_gan.yaml
+  - egs/datasets/audio/mix/base_text2mel.yaml

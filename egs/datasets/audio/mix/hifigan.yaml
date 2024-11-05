@@ -1,0 +1,3 @@
+base_config:
+  - egs/egs_bases/tts/vocoder/hifigan.yaml
+  - egs/datasets/audio/mix/base_mel2wav.yaml

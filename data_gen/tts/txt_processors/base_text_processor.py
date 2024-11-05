@@ -27,10 +27,10 @@ class BaseTxtProcessor:
     @classmethod
     def postprocess(cls, txt_struct, preprocess_args):
         # remove sil phoneme in head and tail
-        while len(txt_struct) > 0 and is_sil_phoneme(txt_struct[0][0]):
-            txt_struct = txt_struct[1:]
-        while len(txt_struct) > 0 and is_sil_phoneme(txt_struct[-1][0]):
-            txt_struct = txt_struct[:-1]
+        # while len(txt_struct) > 0 and is_sil_phoneme(txt_struct[0][0]):
+        #     txt_struct = txt_struct[1:]
+        # while len(txt_struct) > 0 and is_sil_phoneme(txt_struct[-1][0]):
+        #     txt_struct = txt_struct[:-1]
         if preprocess_args['with_phsep']:
             txt_struct = cls.add_bdr(txt_struct)
         if preprocess_args['add_eos_bos']:

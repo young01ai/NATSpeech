@@ -1,0 +1,31 @@
+base_config: egs/egs_bases/tts/base.yaml
+raw_data_dir: 'data/raw/ecspeech'
+processed_data_dir: 'data/processed/ecspeech'
+binary_data_dir: 'data/binary/ecspeech'
+preprocess_cls: egs.datasets.audio.mix.preprocess.MixPreprocess
+preprocess_args:
+  # text process
+  txt_processor: mix
+  use_mfa: true
+  reset_phone_dict: true
+  reset_word_dict: true
+  with_phsep: false
+  add_eos_bos: true
+  # mfa
+  mfa_group_shuffle: false
+  mfa_offset: 0.02
+  # wav processors
+  wav_processors: [ sox_resample ]
+binarization_args:
+  shuffle: true
+  train_range: [ 871, -1 ]
+  test_range: [ 0, 523 ]
+  valid_range: [ 523, 871 ]
+test_ids: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+            10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+            68, 70, 74, 87, 110, 172, 190, 215, 231, 294,
+            316, 324, 402, 422, 485, 500, 505, 508, 509, 519 ]
+f0_min: 80
+f0_max: 600
+num_spk: 1024
+vocoder_ckpt: checkpoints/hifi_lj

@@ -12,7 +12,7 @@ from data_gen.tts.txt_processors.base_text_processor import get_txt_processor_cl
 from data_gen.tts.wav_processors.base_processor import get_wav_processor_cls
 from utils.commons.hparams import hparams
 from utils.commons.multiprocess_utils import multiprocess_run_tqdm
-from utils.os_utils import link_file, move_file, remove_file
+from utils.os_utils import link_file, move_file, copy_file, remove_file
 from utils.text.text_encoder import is_sil_phoneme, build_token_encoder
 
 
@@ -105,7 +105,7 @@ class BasePreprocessor:
                     self.build_mfa_inputs, args, desc='Build MFA data'):
                 items[i]['wav_align_fn'] = new_wav_align_fn
                 for w in ph_gb_word_nosil.split(" "):
-                    mfa_dict.add(f"{w} {w.replace('_', ' ')}")
+                    mfa_dict.add(f"{w}\t{w.replace('-', ' ')}")  # NOTE: '_' => '-'
             mfa_dict = sorted(mfa_dict)
             with open(f'{processed_dir}/mfa_dict.txt', 'w') as f:
                 f.writelines([f'{l}\n' for l in mfa_dict])
@@ -147,7 +147,7 @@ class BasePreprocessor:
     def txt_to_ph(txt_processor, txt_raw, preprocess_args):
         txt_struct, txt = txt_processor.process(txt_raw, preprocess_args)
         ph = [p for w in txt_struct for p in w[1]]
-        ph_gb_word = ["_".join(w[1]) for w in txt_struct]
+        ph_gb_word = ["-".join(w[1]) for w in txt_struct]  # NOTE: '_' => '-'
         words = [w[0] for w in txt_struct]
         # word_id=0 is reserved for padding
         ph2word = [w_id + 1 for w_id, w in enumerate(txt_struct) for _ in range(len(w[1]))]
@@ -158,17 +158,16 @@ class BasePreprocessor:
         processors = [get_wav_processor_cls(v) for v in preprocess_args['wav_processors']]
         processors = [k() for k in processors if k is not None]
         if len(processors) >= 1:
-            sr_file = librosa.core.get_samplerate(wav_fn)
-            output_fn_for_align = None
+            sr = hparams['audio_sample_rate']
+            # sr_file = librosa.core.get_samplerate(wav_fn)
             ext = os.path.splitext(wav_fn)[1]
             input_fn = f"{wav_processed_tmp}/{item_name}{ext}"
             link_file(wav_fn, input_fn)
             for p in processors:
-                outputs = p.process(input_fn, sr_file, wav_processed_tmp, processed_dir, item_name, preprocess_args)
-                if len(outputs) == 3:
-                    input_fn, sr, output_fn_for_align = outputs
-                else:
-                    input_fn, sr = outputs
+                outputs = p.process(input_fn, sr, wav_processed_tmp, processed_dir, item_name, preprocess_args)
+                input_fn, sr = outputs
+            output_fn_for_align = f"{wav_processed_tmp}/{item_name}_ForAlign{ext}"
+            copy_file(input_fn, output_fn_for_align)
             return input_fn, output_fn_for_align
         else:
             return wav_fn, wav_fn
@@ -191,7 +190,7 @@ class BasePreprocessor:
             total_words = sum(word_set.values())
             word_set = word_set.most_common(hparams['word_dict_size'])
             num_unk_words = total_words - sum([x[1] for x in word_set])
-            word_set = ['<BOS>', '<EOS>'] + [x[0] for x in word_set]
+            word_set = [x[0] for x in word_set]  # NOTE: remove <BOS> and <EOS>
             word_set = sorted(set(word_set))
             json.dump(word_set, open(word_set_fn, 'w'), ensure_ascii=False)
             print(f"| Build word set. Size: {len(word_set)}, #total words: {total_words},"
@@ -226,7 +225,7 @@ class BasePreprocessor:
         new_wav_align_fn = f"{mfa_input_group_dir}/{item_name}{ext}"
         move_link_func = move_file if os.path.dirname(wav_align_fn) == wav_processed_tmp else link_file
         move_link_func(wav_align_fn, new_wav_align_fn)
-        ph_gb_word_nosil = " ".join(["_".join([p for p in w.split("_") if not is_sil_phoneme(p)])
+        ph_gb_word_nosil = " ".join(["-".join([p for p in w.split("-") if not is_sil_phoneme(p)])  # NOTE: '_' => '-'
                                      for w in ph_gb_word.split(" ") if not is_sil_phoneme(w)])
         with open(f'{mfa_input_group_dir}/{item_name}.lab', 'w') as f_txt:
             f_txt.write(ph_gb_word_nosil)

@@ -10,9 +10,10 @@ def train_mfa_align(mfa_outputs="mfa_outputs",
                     mfa_inputs="mfa_inputs",
                     model_name=None, pretrain_model_name=None,
                     mfa_cmd='train'):
+    ROOT_DIR = os.getcwd()  # NOTE: arguments of MFA 3.0 must be absolute paths
     CORPUS = hparams['processed_data_dir'].split("/")[-1]
     NUM_JOB = int(os.getenv('N_PROC', os.cpu_count()))
-    env_vars = [f'CORPUS={CORPUS}', f'NUM_JOB={NUM_JOB}']
+    env_vars = [f'ROOT_DIR={ROOT_DIR}', f'CORPUS={CORPUS}', f'NUM_JOB={NUM_JOB}']
     if mfa_outputs is not None:
         env_vars.append(f'MFA_OUTPUTS={mfa_outputs}')
     if mfa_inputs is not None:

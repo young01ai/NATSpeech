@@ -76,3 +76,11 @@ class TxtProcessor(BaseTxtProcessor):
                 txt_struct[i_word][1].append(p)
         txt_struct = cls.postprocess(txt_struct, preprocess_args)
         return txt_struct, txt
+
+
+if __name__ == '__main__':
+    txt = "Hello, world!"
+    txt_processor = TxtProcessor()
+    txt_struct, txt = txt_processor.process(txt, {'with_phsep': False, 'add_eos_bos': False})
+    print(txt_struct)
+    print(txt)

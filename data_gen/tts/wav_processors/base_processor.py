@@ -19,7 +19,7 @@ class BaseWavProcessor:
         raise NotImplementedError
 
     def output_fn(self, input_fn):
-        return f'{input_fn[:-4]}_{self.name}.wav'
+        return f"{input_fn.rsplit('.', maxsplit=1)[0]}_{self.name}.wav"
 
     def process(self, input_fn, sr, tmp_dir, processed_dir, item_name, preprocess_args):
         raise NotImplementedError

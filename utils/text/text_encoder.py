@@ -3,21 +3,23 @@ import re
 import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
-PAD = "<pad>"
+PAD = "<PAD>"
+BOS = "<BOS>"
 EOS = "<EOS>"
 UNK = "<UNK>"
-SEG = "|"
+SEG = "<SEG>"
 PUNCS = '!,.?;:'
-RESERVED_TOKENS = [PAD, EOS, UNK]
+RESERVED_TOKENS = [PAD, BOS, EOS, UNK]
 NUM_RESERVED_TOKENS = len(RESERVED_TOKENS)
 PAD_ID = RESERVED_TOKENS.index(PAD)  # Normally 0
-EOS_ID = RESERVED_TOKENS.index(EOS)  # Normally 1
-UNK_ID = RESERVED_TOKENS.index(UNK)  # Normally 2
+BOS_ID = RESERVED_TOKENS.index(BOS)  # Normally 1
+EOS_ID = RESERVED_TOKENS.index(EOS)  # Normally 2
+UNK_ID = RESERVED_TOKENS.index(UNK)  # Normally 3
 
 if six.PY2:
     RESERVED_TOKENS_BYTES = RESERVED_TOKENS
 else:
-    RESERVED_TOKENS_BYTES = [bytes(PAD, "ascii"), bytes(EOS, "ascii")]
+    RESERVED_TOKENS_BYTES = [bytes(PAD, "ascii"), bytes(BOS, "ascii"), bytes(EOS, "ascii")]
 
 # Regular expression for unescaping token strings.
 # '\u' is converted to '_'
@@ -51,7 +53,7 @@ class TextEncoder(object):
         The ids should be in the range [num_reserved_ids, vocab_size). Ids [0,
         num_reserved_ids) are reserved.
 
-        EOS is not appended.
+        BOS & EOS is not appended.
 
         Args:
         s: human-readable string to be converted.
@@ -64,12 +66,12 @@ class TextEncoder(object):
     def decode(self, ids, strip_extraneous=False):
         """Transform a sequence of int ids into a human-readable string.
 
-        EOS is not expected in ids.
+        BOS & EOS is not expected in ids.
 
         Args:
         ids: list of integers to be converted.
         strip_extraneous: bool, whether to strip off extraneous tokens
-            (EOS and PAD).
+            (BOS, EOS and PAD).
 
         Returns:
         s: human-readable string.
@@ -129,7 +131,7 @@ class TokenTextEncoder(TextEncoder):
                 not None, then vocab_filename should be None.
             replace_oov: If not None, every out-of-vocabulary token seen when
                 encoding will be replaced by this string (which must be in vocab).
-            num_reserved_ids: Number of IDs to save for reserved tokens like <EOS>.
+            num_reserved_ids: Number of IDs to save for reserved tokens like <BOS> or <EOS>.
         """
         super(TokenTextEncoder, self).__init__(num_reserved_ids=num_reserved_ids)
         self._reverse = reverse
@@ -140,6 +142,7 @@ class TokenTextEncoder(TextEncoder):
             assert vocab_list is not None
             self._init_vocab_from_list(vocab_list)
         self.pad_index = self.token_to_id[PAD]
+        self.bos_index = self.token_to_id[BOS]
         self.eos_index = self.token_to_id[EOS]
         self.unk_index = self.token_to_id[UNK]
         self.seg_index = self.token_to_id[SEG] if SEG in self.token_to_id else self.eos_index
@@ -154,10 +157,13 @@ class TokenTextEncoder(TextEncoder):
         ret = [self.token_to_id[tok] for tok in tokens]
         return ret[::-1] if self._reverse else ret
 
-    def decode(self, ids, strip_eos=False, strip_padding=False):
+    def decode(self, ids, strip_bos=False, strip_eos=False, strip_padding=False):
         if strip_padding and self.pad() in list(ids):
             pad_pos = list(ids).index(self.pad())
             ids = ids[:pad_pos]
+        if strip_bos and self.bos() in list(ids):
+            bos_pos = list(ids).index(self.bos())
+            ids = ids[bos_pos+1:]
         if strip_eos and self.eos() in list(ids):
             eos_pos = list(ids).index(self.eos())
             ids = ids[:eos_pos]
@@ -227,6 +233,9 @@ class TokenTextEncoder(TextEncoder):
 
     def pad(self):
         return self.pad_index
+
+    def bos(self):
+        return self.bos_index
 
     def eos(self):
         return self.eos_index

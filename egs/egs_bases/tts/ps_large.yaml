@@ -1,0 +1,42 @@
+base_config: ./ps.yaml
+
+###########################
+# models
+###########################
+# encoders
+hidden_size: 256 # Linguistic Encoder - Hidden Size: 256/192/128
+ffn_hidden_size: 1024 # Linguistic Encoder - Conv1D Filter Size: 1024/768/512
+enc_ffn_kernel_size: 9 # Linguistic Encoder - Conv1D Kernel: 9/5/3
+enc_layers: 6 # Linguistic Encoder - Phoneme Encoder Layers: 4/4/3
+word_enc_layers: 6 # Linguistic Encoder - Word Encoder Layers: 4/4/3
+
+# dur predictor
+dur_predictor_layers: 3
+dur_predictor_kernel: 5
+predictor_dropout: 0.2
+
+## fvae
+use_fvae: true
+latent_size: 16 # Varational Generator - Latent Size: 16
+fvae_encoder_type: wn
+fvae_decoder_type: wn
+fvae_enc_dec_hidden: 256 # Varational Generator - Encoder/Decoder Channel Size: 256/192/128
+fvae_kernel_size: 9 # Varational Generator - Encoder/Decoder Kernel: 9/5/3
+fvae_enc_n_layers: 8 # Varational Generator - Encoder Layers: 8
+fvae_dec_n_layers: 6 # Varational Generator - Decoder Layers: 4/4/3
+fvae_strides: 4
+fvae_noise_scale: 1.0
+
+# prior flow
+use_prior_flow: true
+prior_flow_hidden: 128 # VP-Flow Channel Size: 128/64/32
+prior_flow_kernel_size: 3 # VP-Flow Conv1D Kernel: 3
+prior_flow_n_blocks: 6 # (?) VP-Flow Steps: 4/4/3
+
+# # post flow
+# post_glow_hidden: 256 # Post-Net - WaveNet Channel Size: 256/192/128
+# post_glow_kernel_size: 3 # Post-Net - WaveNet Kernel: 3
+# post_glow_n_blocks: 16 # (?) Post-Net - Flow Steps: 16/12/8
+# post_glow_n_block_layers: 3 # Post-Net - WaveNet Layers: 3
+# share_wn_layers: 4 # (?) Post-Net - Shared Groups: 4
+# noise_scale: 0.8

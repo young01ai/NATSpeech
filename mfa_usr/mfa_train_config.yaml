@@ -8,13 +8,13 @@ features:
 
 training:
   - monophone:
-      num_iterations: 40
+      num_iterations: 8 #40
       max_gaussians: 1000
       subset: 0
       boost_silence: 1.25
 
   - triphone:
-      num_iterations: 35
+      num_iterations: 7 #35
       num_leaves: 2000
       max_gaussians: 10000
       cluster_threshold: -1
@@ -23,15 +23,16 @@ training:
       power: 0.25
 
   - lda:
+      num_iterations: 7 #35
       num_leaves: 2500
       max_gaussians: 15000
       subset: 0
-      num_iterations: 35
       features:
           splice_left_context: 3
           splice_right_context: 3
 
   - sat:
+      num_iterations: 7 #35
       num_leaves: 2500
       max_gaussians: 15000
       power: 0.2
@@ -42,6 +43,7 @@ training:
           lda: true
 
   - sat:
+      num_iterations: 7 #35
       num_leaves: 4200
       max_gaussians: 40000
       power: 0.2
@@ -66,6 +68,7 @@ training:
 #      power: 0.25
 #
 #  - sat:
+#      num_iterations: 35
 #      num_leaves: 3100
 #      max_gaussians: 50000
 #      power: 0.2
